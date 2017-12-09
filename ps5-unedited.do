@@ -1,3 +1,8 @@
+//it looks fine in dofile, but when you upload to github formatting messes up
+//thats becasue you upload as readme, but readme should be empty or maybe contain
+//just number of a ps; but upload ps as a dofile--thre is a button on the right
+//to upload the file as opposed to copy paste into read me; need to upload .do from hard drive
+
 ************************//////////Gabby Mora////////////************************
 
                          /////////*Problem Set 5*//////
@@ -6,6 +11,12 @@
 
 /*------------------------------------------------------------------------------
 Research Questions
+
+i like these questions! again, reading luterature helps not only with writing but
+also with data work, so i'd have a look at literature: 
+eg:
+https://scholar.google.com/scholar?hl=en&as_sdt=0%2C31&q=animal+abuse+%2C+socio-economic+status&btnG=
+
 1- Does socio-economic status affect the number of animal abuse incidents in NYC?
 2- Is there a connection between socio-economic status and other demographic items
 and the number of animal abuse incidents in NYC?
@@ -13,6 +24,10 @@ and the number of animal abuse incidents in NYC?
 of animal abuse incidents in NYC?
 4- What are the main factors affecting the severity of animal abuse incidents
 in NYC?
+
+and as you are going through the literature adn crunching more numbers, i'd start 
+working on papers and trying to publish them!
+
 ------------------------------------------------------------------------------*/
 
 /******************************************************************************
@@ -105,6 +120,12 @@ replace Location=0 if LocationType=="StoreCommercial" | LocationType=="House and
 replace Location=1 if LocationType=="Residential Building" | LocationType=="Residential BuildingHouse"
 
 replace Location=2 if LocationType=="StreetSidewalk" | LocationType=="ParkPlayground"
+//thats fine; however i would maybe just keep location as it is, too
+//if you colllapse this way you are losing info: you have fewer categories
+
+//and always good to check how they relate to each other:
+ta Location LocationType, mi
+
 
 encode LocationType, generate(LocationType_n)
 
@@ -134,6 +155,9 @@ encode ZipCode, generate(ZipCode_n)
 drop ZipCode
 
 rename ZipCode_n ZipCode
+//this encoding of zipcode above doesnt make sense because you have just destroyed
+//the zipcode and generated numbers that do not mean anything!
+ta Zip, nola
 
 replace ZipCode=0 if ZipCode==.
 
@@ -145,6 +169,8 @@ ______________________________________________________________________________*/
 
 clear
 
+//may wanna descrie these data briefly here or in the preamble; i have no clue where
+//these data are from and what they are; same for other data
 import excel "https://docs.google.com/uc?id=0BywXSn44t-HlMURzMmVjUExDRjg&export=download", firstrow clear
 
 rename JURISDICTIONNAME ZipCode
@@ -162,6 +188,8 @@ ______________________________________________________________________________*/
 clear
 
 import excel "https://docs.google.com/uc?id=0BywXSn44t-HlWnhZVkFzN1pNZ28&export=download", firstrow clear
+count  //wow! awesome! this looks like a very rich dataset; 44k obs!
+
 
 drop EventID StartDateTime EndDateTime EnteredOn CommunityBoards Country ParkingHeld EventAgency SubCategoryName 
 
@@ -177,7 +205,9 @@ rename newzip ZipCode
 
 drop newzip2
 
-encode ZipCode, generate(ZipCode_n)
+encode ZipCode, generate(ZipCode_n) //again, think about this encoding!
+//it just assignes consectutive values 1,2,3 for ordered orignial values
+//so these values usually do not have any intrinsic meaning! and see encoding further down too
 
 drop ZipCode
 
@@ -229,7 +259,12 @@ save Farmers_Markets_Clean, replace
 
 clear
 
-use "Demographics_Clean"
+use "Demographics_Clean" //again not sure what these data are,
+//so cannot really evaluate much here; but it really looks like they are highly not
+//representative! so cannot really say anything about zipcode based on these data
+//again, what you probably need is census data at zip level to be able to say
+//sth about context of abuse
+//https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtml?refresh=t
 
 merge 1:m ZipCode using "Animal_Abuse_Complete" 
 
@@ -237,8 +272,8 @@ drop if Descriptor==.
 
 drop _merge
 
-
-recode Descriptor (6=6) (1=5) (2=4) (3=2) (4=3) (5=1), gen (Severity) 
+//could label these too!
+recode Descriptor (6=6 "some label of what 6 means") (1=5 "label here too etc etc") (2=4) (3=2) (4=3) (5=1), gen (Severity) 
 /*I recoded so I could analyze the level of abuse (Descriptor) according to the
 severity of the issue with 1 being the least severe and 6 the most: Other, 
 Neglected, No Shelter, In Car, Chained, Torture).*/
@@ -289,6 +324,8 @@ use "Animal_Abuse_COMPLETE"
 
 tabulate ZipCode Descriptor
 
+//this is good and useful, could have someting like this in a paper!
+//and again can add options ',row' and ',col' to calc repective percentages
 /*
 Incident |                            Descriptor
 Zip      |Chained In Car  Neglected  No Shelte     Other  Tortured |     Total
@@ -349,6 +386,7 @@ significant impact on the increase of severity of the animal abuse incident*/
 and Public Assistance and Race. I will then crosstabulate race and
 socio-economic status to see if there is a correlation*/
 
+//i'd focus on decruiptive stats for now and wait with regressions for later!
 regress Severity PublicAssistance PacificIslander HispanicLatino AmericanIndian Asian White AfricanAmerican
 
 /*note: PacificIslander omitted because of collinearity
